@@ -1,25 +1,27 @@
-from google import genai
-from app.config import GEMINI_API_KEY
+import os
+from dotenv import load_dotenv
+from groq import GroqClient  # Make sure the Groq SDK is installed
 
-client = genai.Client(api_key=GEMINI_API_KEY)
+# Load API key
+load_dotenv()
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
+# Initialize client
+client = GroqClient(api_key=GROQ_API_KEY)
 
-def analyze_company(company_description):
-
-    prompt = f"""
-    Analyze this company and identify:
-
-    1. Possible business pain points
-    2. Sales opportunities
-    3. Potential services they might need
-
-    Company Description:
-    {company_description}
+def analyze_company(company_description: str) -> str:
     """
-
-    response = client.models.generate_content(
-        model="gemini-2.0-flash",
-        contents=prompt
+    Analyze a company using Groq SDK.
+    """
+    prompt = (
+        f"Analyze this company for sales opportunities and provide insights:\n\n"
+        f"{company_description}"
     )
 
-    return response.text
+    response = client.generate(
+        model="groq-sales-1",  # Your Groq model name
+        prompt=prompt,
+        max_output_tokens=300
+    )
+
+    return response.text if hasattr(response, "text") else str(response)
